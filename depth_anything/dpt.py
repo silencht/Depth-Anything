@@ -101,6 +101,7 @@ class DPTHead(nn.Module):
             )
             
     def forward(self, out_features, patch_h, patch_w):
+        print("Init DPTHead Forward")
         out = []
         for i, x in enumerate(out_features):
             if self.use_clstoken:
@@ -142,14 +143,14 @@ class DPT_DINOv2(nn.Module):
         
         assert encoder in ['vits', 'vitb', 'vitl']
         
-        # in case the Internet connection is not stable, please load the DINOv2 locally
+        # in case the Internet connection is not stable, please load the DINOv2 locally. Encoder
         if localhub:
             self.pretrained = torch.hub.load('torchhub/facebookresearch_dinov2_main', 'dinov2_{:}14'.format(encoder), source='local', pretrained=False)
         else:
             self.pretrained = torch.hub.load('facebookresearch/dinov2', 'dinov2_{:}14'.format(encoder))
         
         dim = self.pretrained.blocks[0].attn.qkv.in_features
-        
+        # https://arxiv.org/pdf/2103.13413.pdf Figure 1. Head Decoder
         self.depth_head = DPTHead(1, dim, features, use_bn, out_channels=out_channels, use_clstoken=use_clstoken)
         
     def forward(self, x):
@@ -165,7 +166,7 @@ class DPT_DINOv2(nn.Module):
 
         return depth.squeeze(1)
 
-
+# 输入是DINOv2进行编码，输出是DPT解码，网络架构和参数从Huggingface的PyTorchModelHubMixin恢复
 class DepthAnything(DPT_DINOv2, PyTorchModelHubMixin):
     def __init__(self, config):
         super().__init__(**config)

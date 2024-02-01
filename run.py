@@ -27,7 +27,8 @@ if __name__ == '__main__':
     font_thickness = 2
     
     DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    
+
+    print(DEVICE)
     depth_anything = DepthAnything.from_pretrained('LiheYoung/depth_anything_{}14'.format(args.encoder)).to(DEVICE).eval()
     
     total_params = sum(param.numel() for param in depth_anything.parameters())
@@ -47,7 +48,7 @@ if __name__ == '__main__':
         PrepareForNet(),
     ])
     
-    if os.path.isfile(args.img_path):
+    if os.path.isfile(args.img_path): #自动将img-path的-替换为了_
         if args.img_path.endswith('txt'):
             with open(args.img_path, 'r') as f:
                 filenames = f.read().splitlines()
@@ -65,6 +66,7 @@ if __name__ == '__main__':
         image = cv2.cvtColor(raw_image, cv2.COLOR_BGR2RGB) / 255.0
         
         h, w = image.shape[:2]
+        print(h,w)
         
         image = transform({'image': image})['image']
         image = torch.from_numpy(image).unsqueeze(0).to(DEVICE)

@@ -13,6 +13,38 @@
 <a href='https://huggingface.co/papers/2401.10891'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Paper-yellow'></a>
 </div>
 
+> 个人笔记
+>
+> 先使用带标签的数据集训练一个教师模型T，也就是**实线部分**。
+>
+> 直接训练学生模型S（**虚线部分**）肯定超不过教师，所以学生模型训练时在无标签图像加入失真（颜色、空间、高斯模糊、裁剪、混合等）进行数据增强。
+>
+> 使用语义信息辅助，用了一堆分割网络给无标签图像打标签，但是提升有限，作者推断是离散空间丢失了太多语义信息。所以就用了DINOv2模型直接提取语义特征（而非简单的标签）。所以语义信息的特征就是连续且丰富的了。然后就最小化S提取的特征fi和DINOv2提取的fi'的余弦相似度Loss。
+>
+> 但是语义信息只能说明是一个物体，但不能说明物体每个部位深度都一样。所以就设置了一个阈值alpha，一旦余弦相似度超过阈值，就不考虑这项Loss了（所以就只考虑教师T的假标签监督）。
+>
+> 所以最终就三个Loss：一个教师模型的，一个学生模型（叫什么放射不变损失，其实就是把输入图像加入失真后，降低S和T预测的差异），还有一个语义辅助的。
+>
+>
+> **实现细节**
+>
+> 用DINOv2做的图像编码器，用DPT做的解码器做深度值回归。
+>
+> 第一阶段，训20轮教师模型T；
+>
+> 第二阶段，一次性扫描完所有无标签图像，用教师模型T（基于ViT-L编码器）打标签。
+>
+> 每批次带标签和不带标签的图像比例是1：2.
+>
+> 所有阶段中，预训练好的编码器学习率设置5e-6，解码器使用10倍的学习率。用AdamW优化器，使用线性调度器下降学习率。
+>
+> 带标签的仅仅使用水平图像翻转来增强数据。
+>
+> 阈值alpha设为0.15。
+>
+>
+> 训练中把所有图片搞成518*518，推理的时候不搞。只确保是14倍数（DINOv2编码器的预定义patch size）
+
 This work presents Depth Anything, a highly practical solution for robust monocular depth estimation by training on a combination of 1.5M labeled images and **62M+ unlabeled images**.
 
 ![teaser](assets/teaser.png)
@@ -28,7 +60,7 @@ This work presents Depth Anything, a highly practical solution for robust monocu
 ## Features of Depth Anything
 
 - **Relative depth estimation**:
-    
+  
     Our foundation models listed [here](https://huggingface.co/spaces/LiheYoung/Depth-Anything/tree/main/checkpoints) can provide relative depth estimation for any given image robustly. Please refer [here](#running) for details.
 
 - **Metric depth estimation**
