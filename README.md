@@ -13,6 +13,8 @@
 <a href='https://huggingface.co/papers/2401.10891'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Paper-yellow'></a>
 </div>
 
+![Depth Anything Pipeline](./assets/depth_anything_pipeline.png)
+
 > 个人笔记
 >
 > 先使用带标签的数据集训练一个教师模型T，也就是**实线部分**。
