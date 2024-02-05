@@ -101,7 +101,6 @@ class DPTHead(nn.Module):
             )
             
     def forward(self, out_features, patch_h, patch_w):
-        print("Init DPTHead Forward")
         out = []
         for i, x in enumerate(out_features):
             if self.use_clstoken:
