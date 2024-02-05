@@ -126,10 +126,10 @@ if __name__ == '__main__':
         # print("A",A)                     # shape: A[1,2]  
         # # print("A2",A2)          
         
-        mse = ((A @ x - b) ** 2).mean()
-        mean_error = np.abs(A @ x - b).mean()
-        print("mse",mse)
-        # print("mean_error",mean_error)
+        RMSE = np.sqrt(((A @ x - b) ** 2).mean())
+        REL = (np.abs(A @ x - b) / b).mean()
+        print("RMSE",RMSE)
+        print("REL",REL)
 
         # visualizaiton
         cv2.imshow("raw image",raw_image)
